@@ -71,10 +71,7 @@ export default function RegisterPage() {
       alert('회원가입이 완료되었습니다. 로그인 페이지로 이동합니다.');
       router.push('/login');
     } catch (err: any) {
-      console.error('register error', err);
-      // Support structured ApiError.detail.error, Error.message, or legacy shapes
-      const message = err?.detail?.error || err?.message || err?.error || '회원가입에 실패했습니다.';
-      setError(message);
+      setError(err.error || '회원가입에 실패했습니다.');
     } finally {
       setLoading(false);
     }

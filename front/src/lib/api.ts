@@ -2,20 +2,6 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 
-// Structured API error to preserve status/code/detail from server
-export class ApiError extends Error {
-  status?: number;
-  code?: string | number;
-  detail?: any;
-  constructor(message: string, status?: number, code?: string | number, detail?: any) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.code = code;
-    this.detail = detail;
-  }
-}
-
 // localStorage에서 user_id 가져오기
 export const getUserId = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -92,8 +78,8 @@ export const apiRequest = async <T>(
         };
       }
       
-  const errorCode = error.detail?.code || error.code;
-  const errorMessage = error.detail?.error || error.detail || error.error || error.message || errorText;
+      const errorCode = error.detail?.code || error.code;
+      const errorMessage = error.detail?.error || error.detail || error.error || error.message || errorText;
       
       // 404 NOT_FOUND는 정상적인 빈 결과 상황일 수 있으므로 경고 수준 낮춤
       if (response.status === 404 && (errorCode === 'NOT_FOUND' || errorMessage?.includes('없습니다'))) {
@@ -102,13 +88,7 @@ export const apiRequest = async <T>(
         console.error(`[API Error] ${method} ${url} - ${response.status}:`, errorText);
       }
       
-      // Throw structured ApiError so frontend can show meaningful messages
-      throw new ApiError(
-        `[${method} ${endpoint}] API Error (${response.status}): ${errorMessage}`,
-        response.status,
-        errorCode,
-        error
-      );
+      throw new Error(`[${method} ${endpoint}] API Error (${response.status}): ${errorMessage}`);
     }
     
     // 204 No Content인 경우 빈 객체 반환
