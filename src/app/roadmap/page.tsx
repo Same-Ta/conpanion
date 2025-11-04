@@ -6,19 +6,6 @@ import Navbar from '@/components/Navbar';
 import { getUserId, apiGet, apiPost } from '@/lib/api';
 import { JobPosting as ApiJobPosting, Goal } from '@/types/api';
 
-type SidebarItem = {
-  id: string;
-  label: string;
-  emoji?: string;
-};
-
-type SidebarSection = {
-  id: string;
-  title: string;
-  icon: string;
-  items: SidebarItem[];
-};
-
 type CalendarTask = {
   id: string;
   title: string;
@@ -60,15 +47,6 @@ type JobPosting = {
   url?: string;
 };
 
-const INITIAL_SIDEBAR_SECTIONS: SidebarSection[] = [
-  { id: 'resume', title: 'MY RESUME', icon: '', items: [] },
-  { id: 'experience', title: 'MY EXPERIENCE', icon: '', items: [] },
-  { id: 'objective', title: 'OBJECTIVE', icon: '', items: [] },
-  { id: 'memo', title: 'MEMO', icon: '', items: [] },
-  { id: 'link', title: 'LINK', icon: '', items: [] },
-  { id: 'coverletter', title: 'COVER LETTER', icon: '', items: [] }
-];
-
 export default function RoadmapPage() {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 1));
@@ -78,10 +56,7 @@ export default function RoadmapPage() {
   const [selectedJob, setSelectedJob] = useState<JobPosting | null>(null);
   const [showJobDetail, setShowJobDetail] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sidebarSections, setSidebarSections] = useState<SidebarSection[]>(INITIAL_SIDEBAR_SECTIONS);
   const [draggedTask, setDraggedTask] = useState<DailyTask | null>(null);
-  const [newItemInput, setNewItemInput] = useState<{ [key: string]: string }>({});
-  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   
   // 체크박스 상태 관리
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
@@ -131,13 +106,11 @@ export default function RoadmapPage() {
   const loadFromLocalStorage = () => {
     const savedCalendarTasks = localStorage.getItem('calendarTasks');
     const savedDailyTasks = localStorage.getItem('dailyTasks');
-    const savedSidebarSections = localStorage.getItem('sidebarSections');
     const savedJobPostings = localStorage.getItem('jobPostings');
     const savedWeeklyRoutines = localStorage.getItem('weeklyRoutines');
     
     if (savedCalendarTasks) setCalendarTasks(JSON.parse(savedCalendarTasks));
     if (savedDailyTasks) setDailyTasks(JSON.parse(savedDailyTasks));
-    if (savedSidebarSections) setSidebarSections(JSON.parse(savedSidebarSections));
     if (savedJobPostings) {
       const jobs = JSON.parse(savedJobPostings);
       console.log('로드된 공고:', jobs);
@@ -180,8 +153,6 @@ export default function RoadmapPage() {
         setCalendarTasks(JSON.parse(e.newValue));
       } else if (e.key === 'dailyTasks' && e.newValue) {
         setDailyTasks(JSON.parse(e.newValue));
-      } else if (e.key === 'sidebarSections' && e.newValue) {
-        setSidebarSections(JSON.parse(e.newValue));
       }
     };
 
@@ -208,10 +179,6 @@ export default function RoadmapPage() {
   useEffect(() => {
     localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks));
   }, [dailyTasks]);
-
-  useEffect(() => {
-    localStorage.setItem('sidebarSections', JSON.stringify(sidebarSections));
-  }, [sidebarSections]);
 
   useEffect(() => {
     localStorage.setItem('jobPostings', JSON.stringify(jobPostings));
@@ -719,37 +686,6 @@ export default function RoadmapPage() {
         );
       }
     }
-  };
-
-  // 사이드바 아이템 추가
-  const addSidebarItem = (sectionId: string) => {
-    const inputValue = newItemInput[sectionId]?.trim();
-    if (!inputValue) return;
-
-    setSidebarSections(prev =>
-      prev.map(section =>
-        section.id === sectionId
-          ? {
-              ...section,
-              items: [...section.items, { id: Date.now().toString(), label: inputValue }]
-            }
-          : section
-      )
-    );
-
-    setNewItemInput(prev => ({ ...prev, [sectionId]: '' }));
-    setEditingSectionId(null);
-  };
-
-  // 사이드바 아이템 삭제
-  const deleteSidebarItem = (sectionId: string, itemId: string) => {
-    setSidebarSections(prev =>
-      prev.map(section =>
-        section.id === sectionId
-          ? { ...section, items: section.items.filter(item => item.id !== itemId) }
-          : section
-      )
-    );
   };
 
   const generateCalendar = () => {
@@ -1463,59 +1399,9 @@ export default function RoadmapPage() {
             </div>
           </div>
         </div>
-        <div className="w-64 bg-white border-l overflow-y-auto">
-          {sidebarSections.map(section => (
-            <div key={section.id} className="border-b">
-              <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm">{section.icon}</span>
-                  <span className="text-[10px] font-bold text-gray-700 uppercase tracking-wide">{section.title}</span>
-                </div>
-                <button
-                  onClick={() => setEditingSectionId(editingSectionId === section.id ? null : section.id)}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  {editingSectionId === section.id ? '닫기' : '+'}
-                </button>
-              </div>
-              <div className="py-1">
-                {section.items.map(item => (
-                  <div key={item.id} className="px-3 py-1.5 hover:bg-gray-50 cursor-pointer flex items-center justify-between group">
-                    <div className="flex items-center gap-1.5">
-                      {item.emoji && <span className="text-xs">{item.emoji}</span>}
-                      <span className="text-xs text-gray-700">{item.label}</span>
-                    </div>
-                    <button
-                      onClick={() => deleteSidebarItem(section.id, item.id)}
-                      className="opacity-0 group-hover:opacity-100 text-red-500 text-xs hover:text-red-700"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                {editingSectionId === section.id && (
-                  <div className="px-3 py-2 flex gap-1">
-                    <input
-                      type="text"
-                      value={newItemInput[section.id] || ''}
-                      onChange={(e) => setNewItemInput(prev => ({ ...prev, [section.id]: e.target.value }))}
-                      onKeyPress={(e) => e.key === 'Enter' && addSidebarItem(section.id)}
-                      placeholder="항목 추가..."
-                      className="flex-1 text-xs px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                      autoFocus
-                    />
-                    <button
-                      onClick={() => addSidebarItem(section.id)}
-                      className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                    >
-                      추가
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        
+        {/* 경험 캘린더 사이드바 */}
+        <ExperienceCalendarSidebar />
       </div>
 
       {/* 자격요건 상세 모달 */}
@@ -2183,6 +2069,172 @@ export default function RoadmapPage() {
         </div>
       )}
     </>
+  );
+}
+
+// 경험 캘린더 사이드바 컴포넌트
+function ExperienceCalendarSidebar() {
+  const router = useRouter();
+  const [experienceData, setExperienceData] = useState<{
+    experiences: any[];
+    grassData: Record<string, number>;
+    weeks: Date[][];
+  }>({
+    experiences: [],
+    grassData: {},
+    weeks: []
+  });
+
+  useEffect(() => {
+    // localStorage를 useEffect 안에서만 사용 (SSR 문제 해결)
+    const experiences = JSON.parse(localStorage.getItem('experiences') || '[]');
+    const grassData: Record<string, number> = {};
+
+    experiences.forEach((exp: any) => {
+      const date = exp.completedDate;
+      grassData[date] = (grassData[date] || 0) + 1;
+    });
+
+    // 잔디 캘린더 날짜 배열 생성 (최근 12주)
+    const weeks: Date[][] = [];
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 83); // 12주 전
+    
+    for (let week = 0; week < 12; week++) {
+      const days: Date[] = [];
+      for (let day = 0; day < 7; day++) {
+        const date = new Date(startDate);
+        date.setDate(date.getDate() + week * 7 + day);
+        days.push(date);
+      }
+      weeks.push(days);
+    }
+
+    setExperienceData({ experiences, grassData, weeks });
+  }, []);
+
+  const { experiences, grassData, weeks } = experienceData;
+
+  return (
+    <div className="w-[320px] bg-white border-l border-gray-200 p-4 overflow-y-auto flex-shrink-0">
+      <div className="mb-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+          <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          경험 캘린더
+        </h3>
+        <p className="text-xs text-gray-600">최근 12주간의 회고 작성 현황</p>
+      </div>
+
+      {/* 잔디 캘린더 */}
+      <div className="bg-gray-50 rounded-xl p-4 mb-4">
+        <div className="space-y-2">
+          {weeks.map((week, weekIdx) => (
+            <div key={weekIdx} className="flex gap-1">
+              {week.map((date, dayIdx) => {
+                const dateStr = date.toISOString().split('T')[0];
+                const count = grassData[dateStr] || 0;
+                const intensity = count === 0 ? 'bg-gray-200' :
+                                 count === 1 ? 'bg-green-300' :
+                                 count === 2 ? 'bg-green-500' :
+                                 'bg-green-700';
+                return (
+                  <div
+                    key={dayIdx}
+                    className={`w-7 h-7 rounded ${intensity} transition-all hover:ring-2 hover:ring-green-600 cursor-pointer flex items-center justify-center group relative`}
+                    title={`${dateStr}: ${count}개 경험`}
+                  >
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
+                      {new Date(date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                      <br />
+                      {count}개 회고
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex items-center justify-between mt-4 text-xs text-gray-600">
+          <div className="flex items-center gap-1">
+            <span>적음</span>
+            <div className="w-3 h-3 rounded bg-gray-200" />
+            <div className="w-3 h-3 rounded bg-green-300" />
+            <div className="w-3 h-3 rounded bg-green-500" />
+            <div className="w-3 h-3 rounded bg-green-700" />
+            <span>많음</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 이번 주 통계 */}
+      <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200 mb-4">
+        <h4 className="text-sm font-bold text-green-900 mb-3 flex items-center gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+          이번 주 활동
+        </h4>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-green-800">회고 작성</span>
+            <span className="font-bold text-green-900">
+              {(() => {
+                const today = new Date();
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay());
+                const thisWeekCount = Object.entries(grassData).filter(([date, _]) => {
+                  const d = new Date(date);
+                  return d >= weekStart && d <= today;
+                }).reduce((sum, [_, count]) => sum + count, 0);
+                return thisWeekCount;
+              })()}개
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-green-800">총 경험</span>
+            <span className="font-bold text-green-900">{experiences.length}개</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 빠른 링크 */}
+      <div className="space-y-2">
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-between group"
+        >
+          <span className="font-semibold">대시보드 보기</span>
+          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button
+          onClick={() => router.push('/experience')}
+          className="w-full px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center justify-between group"
+        >
+          <span className="font-semibold">전체 경험 보기</span>
+          <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+
+      {/* 팁 */}
+      <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+        <div className="flex items-start gap-2">
+          <svg className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <div className="text-xs text-yellow-800">
+            <p className="font-semibold mb-1">💡 회고 작성 팁</p>
+            <p>태스크 완료 시 바로 회고를 작성하면 더 생생한 경험을 기록할 수 있습니다!</p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
