@@ -96,7 +96,10 @@ export default function RoadmapPage() {
     learned: '',
     challenges: '',
     solutions: '',
-    improvements: ''
+    improvements: '',
+    aiQuestion1: '',
+    aiQuestion2: '',
+    aiQuestion3: ''
   });
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
@@ -522,7 +525,7 @@ export default function RoadmapPage() {
     localStorage.setItem('experiences', JSON.stringify(experiences));
 
     // 초기화
-    setReflection({ learned: '', challenges: '', solutions: '', improvements: '' });
+    setReflection({ learned: '', challenges: '', solutions: '', improvements: '', aiQuestion1: '', aiQuestion2: '', aiQuestion3: '' });
     setTags([]);
     setResources([]);
     setTagInput('');
@@ -534,7 +537,7 @@ export default function RoadmapPage() {
   };
 
   const skipReflection = () => {
-    setReflection({ learned: '', challenges: '', solutions: '', improvements: '' });
+    setReflection({ learned: '', challenges: '', solutions: '', improvements: '', aiQuestion1: '', aiQuestion2: '', aiQuestion3: '' });
     setTags([]);
     setResources([]);
     setShowReflectionModal(false);
@@ -1682,58 +1685,122 @@ export default function RoadmapPage() {
 
             {/* 모달 컨텐츠 */}
             <div className="flex-1 overflow-y-auto p-6">
-              <div className="space-y-5">
-                {/* 배운 점 (필수) */}
-                <div>
-                  <label className="block text-sm font-bold text-text-dark mb-2">
-                    배운 점 <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    value={reflection.learned}
-                    onChange={(e) => setReflection({...reflection, learned: e.target.value})}
-                    placeholder="이 태스크를 통해 무엇을 배웠나요?"
-                    className="form-control min-h-[100px]"
-                    required
-                  />
+              <div className="space-y-6">
+                {/* AI 회고 가이드 */}
+                <div className="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border-2 border-indigo-200">
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">AI 회고 도우미</h3>
+                      <p className="text-sm text-gray-600">3가지 핵심 질문에 답하며 진정한 학습을 정리해보세요</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* 질문 1 */}
+                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                      <div className="flex items-start gap-3 mb-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                        <p className="text-sm font-semibold text-gray-900">이 경험을 통해 <span className="text-indigo-600">가장 큰 성장</span>을 느낀 순간은 언제였나요?</p>
+                      </div>
+                      <textarea
+                        value={reflection.aiQuestion1 || ''}
+                        onChange={(e) => setReflection({...reflection, aiQuestion1: e.target.value})}
+                        placeholder="구체적인 상황과 그 순간의 감정을 떠올려보세요..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-h-[80px]"
+                      />
+                    </div>
+
+                    {/* 질문 2 */}
+                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                      <div className="flex items-start gap-3 mb-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                        <p className="text-sm font-semibold text-gray-900">이 과정에서 <span className="text-indigo-600">예상과 달랐던 점</span>은 무엇이고, 그것이 주는 교훈은?</p>
+                      </div>
+                      <textarea
+                        value={reflection.aiQuestion2 || ''}
+                        onChange={(e) => setReflection({...reflection, aiQuestion2: e.target.value})}
+                        placeholder="처음 생각했던 것과 실제로 경험한 것의 차이를 생각해보세요..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-h-[80px]"
+                      />
+                    </div>
+
+                    {/* 질문 3 */}
+                    <div className="bg-white rounded-lg p-4 border border-indigo-200">
+                      <div className="flex items-start gap-3 mb-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                        <p className="text-sm font-semibold text-gray-900"><span className="text-indigo-600">6개월 후</span>의 나에게 이 경험을 어떻게 설명하시겠습니까?</p>
+                      </div>
+                      <textarea
+                        value={reflection.aiQuestion3 || ''}
+                        onChange={(e) => setReflection({...reflection, aiQuestion3: e.target.value})}
+                        placeholder="미래의 관점에서 이 경험의 가치를 표현해보세요..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-h-[80px]"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* 어려웠던 점 */}
-                <div>
-                  <label className="block text-sm font-bold text-text-dark mb-2">
-                    어려웠던 점
-                  </label>
-                  <textarea
-                    value={reflection.challenges}
-                    onChange={(e) => setReflection({...reflection, challenges: e.target.value})}
-                    placeholder="어떤 부분이 어려웠나요?"
-                    className="form-control min-h-[80px]"
-                  />
-                </div>
+                {/* 기존 회고 필드들 */}
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-bold text-gray-900 mb-4">상세 회고</h3>
+                  
+                  {/* 배운 점 (필수) */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold text-text-dark mb-2">
+                      배운 점 <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={reflection.learned}
+                      onChange={(e) => setReflection({...reflection, learned: e.target.value})}
+                      placeholder="이 태스크를 통해 무엇을 배웠나요?"
+                      className="form-control min-h-[100px]"
+                      required
+                    />
+                  </div>
 
-                {/* 해결 과정 */}
-                <div>
-                  <label className="block text-sm font-bold text-text-dark mb-2">
-                    해결 과정
-                  </label>
-                  <textarea
-                    value={reflection.solutions}
-                    onChange={(e) => setReflection({...reflection, solutions: e.target.value})}
-                    placeholder="어떻게 문제를 해결했나요?"
-                    className="form-control min-h-[80px]"
-                  />
-                </div>
+                  {/* 어려웠던 점 */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold text-text-dark mb-2">
+                      어려웠던 점
+                    </label>
+                    <textarea
+                      value={reflection.challenges}
+                      onChange={(e) => setReflection({...reflection, challenges: e.target.value})}
+                      placeholder="어떤 부분이 어려웠나요?"
+                      className="form-control min-h-[80px]"
+                    />
+                  </div>
 
-                {/* 개선점 */}
-                <div>
-                  <label className="block text-sm font-bold text-text-dark mb-2">
-                    개선점 및 다음 목표
-                  </label>
-                  <textarea
-                    value={reflection.improvements}
-                    onChange={(e) => setReflection({...reflection, improvements: e.target.value})}
-                    placeholder="다음에는 어떻게 개선할 수 있을까요?"
-                    className="form-control min-h-[80px]"
-                  />
+                  {/* 해결 과정 */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold text-text-dark mb-2">
+                      해결 과정
+                    </label>
+                    <textarea
+                      value={reflection.solutions}
+                      onChange={(e) => setReflection({...reflection, solutions: e.target.value})}
+                      placeholder="어떻게 문제를 해결했나요?"
+                      className="form-control min-h-[80px]"
+                    />
+                  </div>
+
+                  {/* 개선점 */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold text-text-dark mb-2">
+                      개선점 및 다음 목표
+                    </label>
+                    <textarea
+                      value={reflection.improvements}
+                      onChange={(e) => setReflection({...reflection, improvements: e.target.value})}
+                      placeholder="다음에는 어떻게 개선할 수 있을까요?"
+                      className="form-control min-h-[80px]"
+                    />
+                  </div>
                 </div>
 
                 {/* 태그 추가 */}
@@ -2118,3 +2185,4 @@ export default function RoadmapPage() {
     </>
   );
 }
+
