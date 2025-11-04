@@ -623,6 +623,8 @@ export default function GoalSettingPage() {
       
       // 사용자의 스펙과 비교하여 필터링
       const filteredCertifications = certifications.filter((cert: any) => {
+        if (!userProgress) return true; // userProgress가 없으면 모두 표시
+        
         if (cert.type === 'language') {
           // 언어 시험 점수 비교
           const userLanguage = userProgress.languages?.find(
